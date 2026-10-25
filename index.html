@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>青云界 · 修仙</title>
+<link rel="stylesheet" href="style.css?v=22" />
+</head>
+<body>
+<div id="game">
+  <canvas id="scene"></canvas>
+
+  <div id="hud">
+    <!-- ===== 左上：角色 ===== -->
+    <div class="panel panel-tl">
+      <div class="char-row">
+        <div class="portrait"><canvas id="portrait" width="128" height="128"></canvas></div>
+        <div class="char-meta">
+          <div class="char-name" id="charName">无 涯 子</div>
+          <div class="realm"><span id="pathName">散修</span> · <span id="realmText">炼气·一层</span></div>
+        </div>
+        <div class="stones"><canvas id="stoneCoin" width="72" height="72"></canvas><span id="stoneNum">0</span></div>
+      </div>
+      <div class="bar bar-hp"><span id="hpFill"></span><em>气血</em><b id="hpNum">0 / 0</b></div>
+      <div class="bar bar-qi"><span id="qiFill"></span><em>灵力</em><b id="qiNum">0 / 0</b></div>
+      <div class="bar bar-cult"><span id="cultFill"></span><em>修为</em><b id="cultNum">0 / 0</b></div>
+    </div>
+
+    <!-- ===== 右上：菜单按钮 + 地图 ===== -->
+    <div id="menuToggle" class="menu-toggle" title="菜单">
+      <span></span><span></span><span></span>
+    </div>
+    <div id="menuDropdown" class="menu-dropdown hidden">
+      <div class="md-head">
+        <div class="md-title">青 云 界</div>
+        <div class="md-sub" id="mdSub">散修 · 炼气一层</div>
+      </div>
+
+      <div class="md-group">
+        <div class="md-gname"><i></i><span>修 行</span><i></i></div>
+        <div class="md-grid">
+          <div class="md-item" data-act="bag">
+            <svg viewBox="0 0 24 24"><path d="M5 9h14l-1 11H6z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg>
+            <em>行囊</em>
+          </div>
+          <div class="md-item" data-act="map">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5 13 13l-4.5 2.5L11 11z"/></svg>
+            <em>图志</em>
+          </div>
+          <div class="md-item" data-act="quest">
+            <svg viewBox="0 0 24 24"><path d="M6 4h11a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2z"/><path d="M9 9h7M9 13h7M9 17h4"/></svg>
+            <em>修行录</em>
+          </div>
+          <div class="md-item" data-act="skillup">
+            <svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 6 5 9a5 5 0 0 1-10 0c0-3 2-5 5-9z"/><path d="M12 20v2"/></svg>
+            <em>淬体</em>
+          </div>
+          <div class="md-item" data-act="forge">
+            <svg viewBox="0 0 24 24"><path d="M4 20l6-6"/><path d="M9 5l10 10-3 3L6 8z"/><path d="M15 3l3 3"/></svg>
+            <em>铸器</em>
+          </div>
+          <div class="md-item" data-act="codex">
+            <svg viewBox="0 0 24 24"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M8 4h8a3 3 0 0 1 3 3v13"/><path d="M9.5 9h4M9.5 13h4"/></svg>
+            <em>图鉴</em>
+          </div>
+        </div>
+      </div>
+
+      <div class="md-group">
+        <div class="md-gname"><i></i><span>商 贸 · 历 练</span><i></i></div>
+        <div class="md-grid">
+          <div class="md-item" data-act="shop">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10h4a1.8 1.8 0 0 1 0 3.6h-3"/></svg>
+            <em>商铺</em>
+          </div>
+          <div class="md-item" data-act="sect">
+            <svg viewBox="0 0 24 24"><path d="M4 21h16"/><path d="M6 21V11l6-4 6 4v10"/><path d="M10 21v-5h4v5"/></svg>
+            <em>宗门</em>
+          </div>
+          <div class="md-item" data-act="dungeon">
+            <svg viewBox="0 0 24 24"><path d="M6 20V9a6 6 0 0 1 12 0v11"/><path d="M10 20v-6a2 2 0 0 1 4 0v6"/></svg>
+            <em>副本</em>
+          </div>
+        </div>
+      </div>
+
+      <div class="md-group">
+        <div class="md-gname"><i></i><span>生 涯</span><i></i></div>
+        <div class="md-grid">
+          <div class="md-item" data-act="activity">
+            <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>
+            <em>活动</em>
+          </div>
+          <div class="md-item" data-act="rank">
+            <svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5H5v2a3 3 0 0 0 3 3M16 5h3v2a3 3 0 0 1-3 3"/><path d="M12 13v4M9 20h6"/></svg>
+            <em>排行</em>
+          </div>
+          <div class="md-item" data-act="titles">
+            <svg viewBox="0 0 24 24"><path d="M4 17l2-9 4 4 2-6 2 6 4-4 2 9z"/><path d="M4 20h16"/></svg>
+            <em>称号</em>
+          </div>
+          <div class="md-item" data-act="account">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+            <em>道号</em>
+          </div>
+          <div class="md-item" data-act="settings">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>
+            <em>设置</em>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== BOSS 血条（居中靠顶） ===== -->
+    <div id="bossBar" class="boss-bar hidden">
+      <div class="bb-name"><span id="bbName">首领</span><em id="bbLv">Lv.1</em></div>
+      <div class="bb-track"><i id="bbFill"></i><span id="bbNum"></span></div>
+    </div>
+
+    <div class="panel panel-tr">
+      <div class="mini-wrap" title="点击放大（M）">
+        <canvas id="minimap" width="336" height="240"></canvas>
+        <div class="mini-zoom">放 大</div>
+      </div>
+      <div class="mini-foot">
+        <span id="mapName">青石村</span>
+        <span id="clock">辰时</span>
+      </div>
+      <div class="mini-foot2"><span id="coord">x:0 y:0</span></div>
+    </div>
+
+    <!-- ===== 底部：招式栏 ===== -->
+    <div id="skillBar"></div>
+
+    <!-- ===== 提示气泡 ===== -->
+    <div id="toasts"></div>
+
+    <!-- ===== 挑战进度条 ===== -->
+    <div id="challengeBar" class="hidden">
+      <div class="chb-top"><span id="chName">试炼</span><span id="chTime">120</span></div>
+      <div class="chb-bot"><span id="chProg">—</span></div>
+    </div>
+
+    <!-- ===== 当前任务追踪 ===== -->
+    <div id="questTracker" class="hidden">
+      <div class="qt-name">任务</div>
+      <div class="qt-obj">—</div>
+      <div class="qt-npc">—</div>
+    </div>
+
+    <!-- ===== 交互提示 ===== -->
+    <div id="interactTip" class="hidden"><kbd id="interactKey">E</kbd><span id="interactText"></span></div>
+
+    <!-- ===== 对话 ===== -->
+    <div id="dialogue" class="hidden">
+      <div class="dlg-portrait"><canvas id="dlgFace" width="240" height="320"></canvas></div>
+      <div class="dlg-body">
+        <div class="dlg-name" id="dlgName">名字</div>
+        <div class="dlg-text" id="dlgText"></div>
+        <div class="dlg-options" id="dlgOptions"></div>
+      </div>
+    </div>
+
+    <!-- ===== 行囊 ===== -->
+    <div id="bagPanel" class="modal hidden">
+      <div class="modal-head"><span>行 囊</span><em>Esc 关闭</em></div>
+      <div class="bag-wrap">
+        <div class="bag-left">
+          <div class="bag-hero">
+            <canvas id="bagFace" width="96" height="128"></canvas>
+            <div class="bag-hero-info" id="bagHeroInfo">—</div>
+            <div class="bag-realm" id="bagRealm"></div>
+          </div>
+          <div class="equip-col" id="equipCol"></div>
+          <div class="bag-grid" id="bagGrid"></div>
+        </div>
+        <div class="bag-right" id="itemDetail">
+          <div class="detail-empty">选择一件物品</div>
+        </div>
+      </div>
+      <div class="bag-bar" id="bagBar"></div>
+      <div class="modal-foot"><span id="bagStone">灵石 0</span><span id="bagStat"></span></div>
+    </div>
+
+    <!-- ===== 商店 ===== -->
+    <div id="shopPanel" class="modal hidden">
+      <div class="modal-head"><span id="shopTitle">杂货铺</span><em>Esc 关闭</em></div>
+      <div class="shop-wrap">
+        <div class="shop-col">
+          <div class="shop-sub">货架</div>
+          <div class="list" id="shopList"></div>
+        </div>
+        <div class="shop-col">
+          <div class="shop-sub">我的行囊</div>
+          <div class="list" id="sellList"></div>
+        </div>
+      </div>
+      <div class="modal-foot"><span id="shopStone">灵石 0</span><span class="dim">点击买入 / 卖出</span></div>
+    </div>
+
+    <!-- ===== 任务 ===== -->
+    <div id="questPanel" class="modal hidden">
+      <div class="modal-head"><span>修 行 录</span><em>Esc 关闭</em></div>
+      <div class="quest-list" id="questList"></div>
+    </div>
+
+    <!-- ===== 传送图志（大地图） ===== -->
+    <div id="mapPanel" class="full hidden">
+      <div class="map-shell">
+        <div class="map-head"><span>传 送 图 志</span><button class="x-btn" id="mapClose">✕ 关闭</button></div>
+        <div class="map-tabs" id="mapTabs"></div>
+        <div class="map-stage">
+          <canvas id="mapCanvas" width="900" height="540"></canvas>
+          <div id="mapTip" class="map-tip hidden"></div>
+        </div>
+        <div class="map-foot"><span id="mapHint">点击已刻录的传送石碑即可御阵传送</span></div>
+      </div>
+    </div>
+
+    <!-- ===== 菜单（设置 / 活动 / 排行） ===== -->
+    <div id="menuPanel" class="full hidden">
+      <div class="menu-shell">
+        <div class="menu-head"><span id="menuTitle">设 置</span><button class="x-btn" id="menuClose">✕ 关闭</button></div>
+        <div class="menu-tabs" id="menuTabs"></div>
+        <div class="menu-body" id="menuBody"></div>
+      </div>
+    </div>
+
+    <!-- ===== 捏脸 ===== -->
+    <div id="customPanel" class="full hidden">
+      <div class="custom-wrap">
+        <div class="custom-title">塑 形</div>
+        <div class="custom-sub">皮相千般，道心惟一</div>
+        <div class="custom-body">
+          <div class="custom-preview">
+            <canvas id="customFace" width="224" height="304"></canvas>
+            <div class="custom-hint">所见即所得 · 入世后亦可于菜单重捏</div>
+          </div>
+          <div class="custom-opts" id="customOpts"></div>
+        </div>
+        <button class="start-btn" id="customDone">入 世</button>
+      </div>
+    </div>
+
+    <!-- ===== 开始界面 ===== -->
+    <div id="startPanel" class="full">
+      <div class="start-wrap">
+        <h1 class="start-title">青 云 界</h1>
+        <div class="start-sub">一介散修 · 初入仙途</div>
+        <div class="start-art"><canvas id="startArt" width="560" height="200"></canvas></div>
+        <button class="start-btn" id="startBtn">开 始 修 行</button>
+        <div class="start-tip" id="startHint">点击开始后择道入世 · 进度自动保存于本机</div>
+        <button class="start-reset hidden" id="startReset">重新择道（清空当前存档）</button>
+      </div>
+    </div>
+
+    <!-- ===== 开局择道 ===== -->
+    <div id="createPanel" class="full hidden">
+      <div class="create-title">择 道</div>
+      <div class="create-sub">仙路三千，各有其难。你欲以何入道？</div>
+      <div class="create-name">
+        <label for="nameInput">道 号</label>
+        <input id="nameInput" type="text" maxlength="8" value="无涯子"
+               autocomplete="off" spellcheck="false" />
+        <em>（将记入修为榜）</em>
+      </div>
+      <div class="path-cards" id="pathCards"></div>
+    </div>
+
+    <!-- ===== 过场 CG ===== -->
+    <div id="cgPanel" class="full hidden">
+      <canvas id="cgCanvas"></canvas>
+      <div class="cg-text">
+        <h2 id="cgTitle"></h2>
+        <div id="cgSub"></div>
+        <p id="cgLine"></p>
+        <div class="cg-next">点击继续 ▸</div>
+      </div>
+    </div>
+
+    <!-- ===== 死亡 ===== -->
+    <div id="deadPanel" class="full hidden">
+      <div class="dead-box">
+        <h2>道消身殒</h2>
+        <p id="deadText">你的修为散于天地之间……</p>
+        <button id="deadBtn">于村口古阵复生</button>
+      </div>
+    </div>
+
+
+    <!-- ===== 通关 ===== -->
+    <div id="clearPanel" class="full hidden">
+      <div class="clear-wrap">
+        <div class="clear-crown">✧</div>
+        <h1 class="clear-title">羽 化 登 仙</h1>
+        <div class="clear-sub">大乘九层圆满 · 此界再无更高处</div>
+        <div class="clear-count">第 <b id="clearNum">1</b> 次通关</div>
+        <div class="clear-stats" id="clearStats">—</div>
+        <div class="clear-tip">可携前世道果转世重修，另择一门入道。</div>
+        <button class="start-btn" id="clearReincarnate">转 世 重 修</button>
+        <button class="start-reset" id="clearStay">还 想 逛 逛</button>
+      </div>
+    </div>
+    <!-- ===== 手机竖屏提示 ===== -->
+    <div id="rotateHint" class="rotate-hint hidden">
+      <div class="rot-phone"><i></i></div>
+      <div class="rot-title">请把手机横过来</div>
+      <div class="rot-sub">本作按横屏设计，竖屏会有大片留白</div>
+      <div class="rot-btns">
+        <button id="rotLock" class="rot-btn primary" type="button">锁定横屏</button>
+        <button id="rotSkip" class="rot-btn" type="button">仍用竖屏</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js?v=22"></script>
+<script src="js/data2.js?v=22"></script>
+<script src="js/gear.js?v=22"></script>
+<script src="js/root.js?v=22"></script>
+<script src="js/world.js?v=22"></script>
+<script src="js/render.js?v=22"></script>
+<script src="js/artsys.js?v=22"></script>
+<script src="js/portrait.js?v=22"></script>
+<script src="js/vfx.js?v=22"></script>
+<script src="js/tranfx.js?v=22"></script>
+<script src="js/skillcg.js?v=22"></script>
+<script src="js/audio.js?v=22"></script>
+<script src="js/rank.js?v=22"></script>
+<script src="js/tower.js?v=22"></script>
+<script src="js/icons.js?v=22"></script>
+<script src="js/gearart.js?v=22"></script>
+<script src="js/touch.js?v=22"></script>
+<script src="js/dialogue.js?v=22"></script>
+<script src="js/account.js?v=22"></script>
+<script src="js/ui.js?v=22"></script>
+<script src="js/panels.js?v=22"></script>
+<script src="js/codex.js?v=22"></script>
+<script src="js/bigmap.js?v=22"></script>
+<script src="js/menu.js?v=22"></script>
+<script src="js/game.js?v=22"></script>
+</body>
+</html>
